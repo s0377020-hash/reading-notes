@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>時光書箋．閱讀筆記</title>
+    <title>留白．閱讀筆記</title>
+    <!-- 引入 Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
@@ -26,31 +27,31 @@
             font-family: 'Noto Sans TC', sans-serif;
             font-weight: 300;
             line-height: 1.6;
-            padding: 2rem;
+            padding: 1.2rem; /* 手機端邊距縮小，留出更多閱讀空間 */
             min-height: 100vh;
         }
 
         /* 頂部導航 */
         header {
             max-width: 1200px;
-            margin: 0 auto 2.5rem auto;
+            margin: 0 auto 1.5rem auto;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
+            flex-direction: column; /* 手機端預設上下排列 */
+            gap: 1rem;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 1rem;
         }
         .header-title h1 {
             font-family: 'Lora', 'Noto Sans TC', serif;
             font-weight: 400;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             letter-spacing: 0.15rem;
             color: var(--accent-color);
         }
         .header-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; }
         
         /* 搜尋與隨機工具列 */
-        .toolbar { display: flex; gap: 0.8rem; align-items: center; }
+        .toolbar { display: flex; gap: 0.5rem; align-items: center; width: 100%; }
         .search-input {
             padding: 0.5rem 1rem;
             border: 1px solid var(--border-color);
@@ -58,14 +59,15 @@
             border-radius: 20px;
             font-size: 0.85rem;
             font-family: inherit;
-            width: 200px;
+            flex-grow: 1; /* 手機端自動填滿剩餘寬度 */
+            min-width: 0;
             transition: all 0.3s;
         }
-        .search-input:focus { outline: none; border-color: var(--accent-color); width: 240px; }
+        .search-input:focus { outline: none; border-color: var(--accent-color); }
         
         /* 通用優雅按鈕 */
         .btn {
-            padding: 0.5rem 1.2rem;
+            padding: 0.5rem 1rem;
             border: 1px solid var(--accent-color);
             background: transparent;
             color: var(--accent-color);
@@ -73,27 +75,30 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-family: inherit;
-            letter-spacing: 0.05rem;
+            white-space: nowrap;
             transition: all 0.3s ease;
         }
         .btn:hover { background: var(--accent-color); color: #fff; }
         .btn-primary { background: var(--accent-color); color: #fff; }
-        .btn-primary:hover { opacity: 0.9; }
 
         /* 分類篩選列 */
         .category-filter-bar {
             max-width: 1200px;
             margin: 0 auto 1.5rem auto;
             display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
+            gap: 0.4rem;
+            overflow-x: auto; /* 超出螢幕時可以左右滑動，這是手機排版的關鍵 */
+            padding-bottom: 0.4rem;
+            -webkit-overflow-scrolling: touch;
         }
+        /* 隱藏滾動條，保持視覺乾淨 */
+        .category-filter-bar::-webkit-scrollbar { display: none; }
         .filter-btn {
             background: none; border: 1px solid var(--border-color); color: var(--text-muted);
-            padding: 0.3rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-family: inherit;
-            transition: all 0.3s;
+            padding: 0.3rem 0.9rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-family: inherit;
+            white-space: nowrap; transition: all 0.3s;
         }
-        .filter-btn.active, .filter-btn:hover {
+        .filter-btn.active {
             border-color: var(--accent-color); color: var(--text-main); background: rgba(125, 107, 88, 0.05);
         }
 
@@ -103,133 +108,116 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* --- 第一層：我的書櫃頁面 --- */
+        /* --- 第一層：我的書櫃頁面雙欄配置 --- */
         .bookshelf-layout {
             display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 2.5rem;
+            grid-template-columns: 1fr; /* 手機端預設單欄 */
+            gap: 1.5rem;
             align-items: start;
         }
         .bookshelf-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* 手機端一排可以放兩本書 */
+            gap: 1rem;
         }
         /* 書籍封面卡片 */
         .book-card {
             background: #fff;
             border: 1px solid var(--border-color);
-            padding: 1.5rem;
+            padding: 1rem;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 200px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            min-height: 160px;
         }
-        .book-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .book-card h3 { font-size: 1.1rem; font-weight: 500; color: var(--text-main); margin-bottom: 0.3rem; }
-        .book-card .author { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .book-card h3 { font-size: 1rem; font-weight: 500; color: var(--text-main); margin-bottom: 0.2rem; }
+        .book-card .author { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+        .book-card .category-tag { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.8rem; }
         
-        .book-card-category-zone {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-        .book-card .category-tag { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
-        .btn-edit-category {
-            background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.75rem; transition: color 0.3s;
-        }
-        .book-card:hover .btn-edit-category { color: var(--text-muted); }
-        .btn-edit-category:hover { color: var(--accent-color) !important; text-decoration: underline; }
-        
-        .book-card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .book-card-meta { display: flex; flex-direction: column; gap: 0.3rem; align-items: flex-start; margin-top: auto; }
         .book-card .badge-status {
-            font-size: 0.75rem; padding: 0.1rem 0.6rem; border-radius: 12px;
+            font-size: 0.7rem; padding: 0.1rem 0.5rem; border-radius: 12px;
             background: var(--bg-main); color: var(--accent-color); border: 1px solid var(--border-color);
         }
-        .book-card .note-count { font-size: 0.75rem; color: var(--text-muted); }
+        .book-card .note-count { font-size: 0.7rem; color: var(--text-muted); }
         
         .btn-card-delete {
-            position: absolute; top: 0.5rem; right: 0.5rem;
-            background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.75rem; opacity: 0; transition: opacity 0.3s;
+            position: absolute; top: 0.4rem; right: 0.4rem;
+            background: none; border: none; color: #bbb; cursor: pointer; font-size: 0.75rem;
         }
-        .book-card:hover .btn-card-delete { opacity: 1; }
-        .btn-card-delete:hover { color: #b76e67; }
 
         /* 備份按鈕區塊 */
         .backup-zone {
-            margin-top: 1.5rem;
-            padding: 1rem;
+            margin-top: 1rem;
+            padding: 0.8rem;
             border: 1px dashed var(--border-color);
             border-radius: 4px;
             display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-            text-align: center;
+            justify-content: space-around;
+            align-items: center;
         }
-        .backup-title { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.05rem; }
+        .backup-title { display: none; } /* 手機端隱藏標題節省空間 */
         .btn-backup-text {
-            background: none; border: none; color: var(--accent-color); font-size: 0.8rem;
-            cursor: pointer; font-family: inherit; text-decoration: underline; transition: color 0.2s;
+            background: none; border: none; color: var(--accent-color); font-size: 0.75rem;
+            cursor: pointer; font-family: inherit; text-decoration: underline;
         }
-        .btn-backup-text:hover { color: var(--text-main); }
 
         /* --- 第二層：書籍內頁（單書筆記） --- */
-        .inside-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 1.5rem; }
-        .inside-header-left { display: flex; align-items: center; gap: 1.5rem; }
-        .inside-title h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--accent-color); }
+        .inside-header { 
+            display: flex; 
+            flex-direction: column; /* 手機端上下排 */
+            gap: 1rem; 
+            margin-bottom: 1.5rem; 
+            border-bottom: 1px dashed var(--border-color); 
+            padding-bottom: 1rem; 
+        }
+        .inside-header-left { display: flex; flex-direction: column; align-items: flex-start; gap: 0.8rem; width: 100%; }
+        .inside-title h2 { font-family: 'Lora', serif; font-size: 1.4rem; color: var(--accent-color); }
         
-        .status-editor { display: flex; align-items: center; gap: 0.5rem; background: #fff; padding: 0.4rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); }
+        .status-editor { width: 100%; justify-content: space-between; display: flex; align-items: center; background: #fff; padding: 0.5rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); }
         .status-editor label { font-size: 0.8rem; color: var(--text-muted); }
         .status-select-mini { border: none; background: transparent; color: var(--text-main); font-family: inherit; font-size: 0.85rem; cursor: pointer; outline: none; }
 
         .inside-layout {
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 3rem;
+            grid-template-columns: 1fr; /* 手機端表單與筆記垂直排列 */
+            gap: 2rem;
             align-items: start;
         }
 
         /* 表單元素通用 */
-        .form-box { background: #fff; padding: 1.8rem; border-radius: 4px; border: 1px solid var(--border-color); }
-        .form-box h3 { font-size: 1rem; margin-bottom: 1.2rem; color: var(--accent-color); }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--accent-color); }
+        .form-box { background: #fff; padding: 1.2rem; border-radius: 4px; border: 1px solid var(--border-color); }
+        .form-box h3 { font-size: 0.95rem; margin-bottom: 1rem; color: var(--accent-color); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 0.3rem; color: var(--accent-color); }
         .form-control {
-            width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); background: var(--bg-main);
-            border-radius: 4px; font-family: inherit; font-size: 0.85rem; color: var(--text-main); transition: all 0.3s;
+            width: 100%; padding: 0.6rem; border: 1px solid var(--border-color); background: var(--bg-main);
+            border-radius: 4px; font-family: inherit; font-size: 0.85rem; color: var(--text-main);
         }
-        .form-control:focus { outline: none; border-color: var(--accent-color); background: #fff; }
         
         /* 心情選擇鈕與自訂區 */
         .mood-selector { display: flex; gap: 0.4rem; flex-wrap: wrap; }
         .mood-btn {
-            border: 1px solid var(--border-color); background: var(--bg-main); padding: 0.3rem 0.6rem;
-            border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: all 0.2s;
+            border: 1px solid var(--border-color); background: var(--bg-main); padding: 0.3rem 0.5rem;
+            border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-family: inherit;
         }
         .mood-btn.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
-        .mood-btn.btn-add-custom { border-style: dashed; color: var(--text-muted); }
 
         /* 文青微糖色票選擇 */
         .color-selector { display: flex; gap: 0.6rem; margin-top: 0.3rem; }
-        .color-dot {
-            width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
-            border: 2px solid transparent; transition: transform 0.2s;
-        }
+        .color-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
         .color-dot.selected { border-color: var(--accent-color); transform: scale(1.1); }
 
         /* 筆記卡片展示區（時間軸概念） */
         .notes-timeline {
             position: relative;
-            padding-left: 1.5rem;
+            padding-left: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
+            gap: 1.5rem;
         }
         .notes-timeline::before {
             content: ''; position: absolute; left: 0; top: 10px; bottom: 10px;
@@ -237,85 +225,109 @@
         }
 
         /* 拍立得筆記卡片 */
-        .timeline-item { position: relative; }
+        .timeline-item { position: relative; width: 100%; }
         .timeline-dot {
-            position: absolute; left: -1.85rem; top: 20px;
-            width: 9px; height: 9px; border-radius: 50%; background: var(--border-color);
-            border: 2px solid var(--bg-main);
+            position: absolute; left: -1.25rem; top: 20px;
+            width: 7px; height: 7px; border-radius: 50%; background: var(--border-color);
         }
         
         .polaroid-card {
-            padding: 1.2rem 1.2rem 2.2rem 1.2rem;
+            padding: 1rem 1rem 2rem 1rem;
             border-radius: 2px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             border: 1px solid var(--border-color);
             position: relative;
-            transition: transform 0.3s;
+            width: 100%;
         }
         
-        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
-        .card-mood { font-size: 0.8rem; color: var(--text-muted); background: rgba(255,255,255,0.4); padding: 0.1rem 0.4rem; border-radius: 4px; }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+        .card-mood { font-size: 0.75rem; color: var(--text-muted); background: rgba(255,255,255,0.4); padding: 0.1rem 0.4rem; border-radius: 4px; }
         
         /* 卡片功能按鈕組 */
         .card-actions { display: flex; gap: 0.5rem; position: absolute; top: 0.5rem; right: 0.5rem; }
-        .btn-card-action {
-            background: none; border: none; color: #bbb; cursor: pointer; font-size: 0.75rem; transition: color 0.3s;
-        }
-        .btn-card-action:hover { color: var(--accent-color); }
-        .btn-card-action.delete:hover { color: #b76e67; }
+        .btn-card-action { background: none; border: none; color: #999; cursor: pointer; font-size: 0.75rem; }
 
-        .card-quote { font-family: 'Lora', serif; font-size: 1.25rem; font-weight: 400; margin-bottom: 1.2rem; line-height: 1.5; }
+        .card-quote { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 400; margin-bottom: 1rem; line-height: 1.5; text-align: justify; }
         
         /* 毛玻璃想法區 */
         .card-thought-box {
             background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.5);
-            padding: 0.9rem; border-radius: 4px; font-size: 0.85rem; text-align: justify; margin-bottom: 1rem;
+            padding: 0.8rem; border-radius: 4px; font-size: 0.8rem; text-align: justify; margin-bottom: 0.8rem;
         }
-        .card-date { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
+        .card-date { font-size: 0.7rem; color: var(--text-muted); text-align: right; }
 
-        /* 內嵌編輯模式樣式 */
         .edit-textarea {
             width: 100%; border: 1px solid var(--border-color); background: rgba(255,255,255,0.8);
-            padding: 0.5rem; border-radius: 4px; font-family: inherit; font-size: 0.9rem; color: var(--text-main);
-            margin-bottom: 0.8rem; resize: vertical;
+            padding: 0.5rem; border-radius: 4px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.5rem;
         }
 
         /* 一期一會燈箱彈窗 */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(58, 53, 50, 0.4); backdrop-filter: blur(4px);
-            z-index: 1000; justify-content: center; align-items: center;
+            z-index: 1000; justify-content: center; align-items: center; pading: 1rem;
         }
         .modal.active { display: flex; }
-        .modal-content { background: var(--bg-main); padding: 2rem; border-radius: 6px; max-width: 500px; width: 90%; position: relative; }
-        .modal-close { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .modal-content { background: var(--bg-main); padding: 1.5rem; border-radius: 6px; width: 90%; max-width: 450px; position: relative; }
+        .modal-close { position: absolute; top: 0.5rem; right: 0.8rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
 
-        .empty-hint { text-align: center; color: var(--text-muted); padding: 4rem 0; font-size: 0.9rem; letter-spacing: 0.05rem; }
+        .empty-hint { text-align: center; color: var(--text-muted); padding: 3rem 0; font-size: 0.85rem; }
+
+        /* ================= 💻 桌上型電腦/平板排版優化 (寬螢幕時自動切換雙欄) ================= */
+        @media (min-width: 768px) {
+            body { padding: 2rem; }
+            header { flex-direction: row; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
+            .toolbar { width: auto; }
+            .search-input { width: 200px; }
+            .category-filter-bar { overflow-x: visible; padding-bottom: 0; margin-bottom: 1.5rem; }
+            .bookshelf-layout { grid-template-columns: 280px 1fr; gap: 2.5rem; }
+            .bookshelf-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 2rem; }
+            .book-card { min-height: 200px; padding: 1.5rem; }
+            .book-card h3 { font-size: 1.1rem; }
+            .book-card-meta { flex-direction: row; justify-content: space-between; align-items: center; }
+            .backup-zone { flex-direction: column; gap: 0.6rem; padding: 1rem; margin-top: 1.5rem; text-align: center; }
+            .backup-title { display: block; }
+            .inside-header { flex-direction: row; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; }
+            .inside-header-left { flex-direction: row; align-items: center; width: auto; }
+            .status-editor { width: auto; }
+            .inside-layout { grid-template-columns: 320px 1fr; gap: 3rem; }
+            .form-box { padding: 1.8rem; }
+            .notes-timeline { padding-left: 1.5rem; gap: 2.5rem; }
+            .timeline-dot { width: 9px; height: 9px; left: -1.85rem; }
+            .polaroid-card { padding: 1.2rem 1.2rem 2.2rem 1.2rem; }
+            .card-quote { font-size: 1.25rem; }
+            .card-thought-box { font-size: 0.85rem; padding: 0.9rem; }
+        }
     </style>
 </head>
 <body>
 
+    <!-- 頂部導航列 -->
     <header>
         <div class="header-title">
             <h1 id="navBrand" style="cursor:pointer;">閱讀筆記</h1>
             <p id="navSub">一本書，幾則筆記，一個安靜的午後。</p>
         </div>
         <div class="toolbar" id="globalToolbar">
-            <input type="text" id="searchInput" class="search-input" placeholder="跨書搜尋佳句、想法...">
+            <input type="text" id="searchInput" class="search-input" placeholder="搜尋佳句、想法...">
             <button class="btn" id="btnRandom">隨機漫步</button>
         </div>
     </header>
 
+    <!-- 分類快速篩選列 -->
     <div class="category-filter-bar" id="categoryFilterBar">
-        </div>
+        <!-- 由 JS 動態注入分類按鈕 -->
+    </div>
 
-    main
     <main>
+        <!-- ================= 第一層：我的書櫃頁面 ================= -->
         <section id="viewBookshelf" class="view-section view-section-bookshelf active">
             <div class="bookshelf-layout">
+                <!-- 左側：控制面板 -->
                 <div>
+                    <!-- 新增書籍表單 -->
                     <div class="form-box">
                         <h3>收入書櫃</h3>
                         <form id="bookForm">
@@ -331,7 +343,8 @@
                                 <label for="newBookCategory">書籍分類</label>
                                 <input type="text" id="newBookCategory" class="form-control" placeholder="如：心理學、文學" list="existCategories">
                                 <datalist id="existCategories">
-                                    </datalist>
+                                    <!-- 動態提示已有的分類 -->
+                                </datalist>
                             </div>
                             <div class="form-group">
                                 <label for="newBookStatus">閱讀狀態</label>
@@ -345,6 +358,7 @@
                         </form>
                     </div>
 
+                    <!-- 備份管理區塊 -->
                     <div class="backup-zone">
                         <div class="backup-title">📁 書房數據維護</div>
                         <button class="btn-backup-text" onclick="exportLibraryBackup()">導出書房完整備份</button>
@@ -353,11 +367,14 @@
                     </div>
                 </div>
 
+                <!-- 書籍網格列表 -->
                 <div class="bookshelf-grid" id="bookshelfGrid">
-                    </div>
+                    <!-- 由 JS 動態注入 -->
+                </div>
             </div>
         </section>
 
+        <!-- ================= 第二層：書籍內頁（單書筆記） ================= -->
         <section id="viewBookInside" class="view-section view-section-inside">
             <div class="inside-header">
                 <div class="inside-header-left">
@@ -367,6 +384,7 @@
                         <p id="currentBookAuthor" style="font-size:0.85rem; color:var(--text-muted);"></p>
                     </div>
                 </div>
+                <!-- 內頁即時調整閱讀狀態區 -->
                 <div class="status-editor">
                     <label>閱讀狀態：</label>
                     <select id="insideStatusSelect" class="status-select-mini">
@@ -378,6 +396,7 @@
             </div>
 
             <div class="inside-layout">
+                <!-- 新增筆記表單 -->
                 <div class="form-box">
                     <h3>銘刻書箋</h3>
                     <form id="noteForm">
@@ -413,16 +432,19 @@
                     </form>
                 </div>
 
+                <!-- 筆記時間軸展示區 -->
                 <div class="notes-timeline" id="notesTimeline">
-                    </div>
+                    <!-- 由 JS 動態注入 -->
+                </div>
             </div>
         </section>
     </main>
 
+    <!-- 一期一會隨機彈窗 -->
     <div class="modal" id="randomModal">
         <div class="modal-content" id="modalContent">
             <span class="modal-close" id="btnModalClose">&times;</span>
-            </div>
+        </div>
     </div>
 
     <script>
@@ -456,7 +478,6 @@
             renderBookshelf();
         });
 
-        // --- 書籍分類動態介面更新 ---
         function updateCategoryInterface() {
             let categories = ['全部'];
             books.forEach(b => {
@@ -485,7 +506,6 @@
             renderBookshelf();
         }
 
-        // --- 第一層：書籍管理事件 ---
         document.getElementById('bookForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const title = document.getElementById('newBookTitle').value.trim();
@@ -526,7 +546,7 @@
             }
 
             if(targetBooks.length === 0) {
-                bookshelfGrid.innerHTML = `<div class="empty-hint">此分類下尚無書籍，放入一本書，開啟思想的偏安之所。</div>`;
+                bookshelfGrid.innerHTML = `<div class="empty-hint">此分類下尚無書籍。</div>`;
                 return;
             }
 
@@ -541,12 +561,12 @@
                         <div class="author">${escapeHtml(book.author)}</div>
                         <div class="book-card-category-zone">
                             <div class="category-tag"># ${escapeHtml(book.category || '未分類')}</div>
-                            <button class="btn-edit-category" onclick="editBookCategory(event, ${book.id})">修改分類</button>
+                            <button class="btn-edit-category" onclick="editBookCategory(event, ${book.id})">修改</button>
                         </div>
                     </div>
                     <div class="book-card-meta">
                         <span class="badge-status">${book.status}</span>
-                        <div class="note-count">🔖 ${book.notes.length} 則筆記</div>
+                        <div class="note-count">🔖 ${book.notes.length} 則</div>
                     </div>
                 `;
                 bookshelfGrid.appendChild(card);
@@ -560,18 +580,12 @@
 
             const newCat = prompt(`請輸入《${book.title}》的新分類名稱：`, book.category || '未分類');
             if(newCat !== null) {
-                const cleanedCat = newCat.trim() || '未分類';
-                book.category = cleanedCat;
-                
+                book.category = newCat.trim() || '未分類';
                 saveData();
                 updateCategoryInterface();
-                
                 let catExists = books.some(b => b.category === currentFilterCategory);
-                if(currentFilterCategory !== '全部' && !catExists) {
-                    currentFilterCategory = '全部';
-                    updateCategoryInterface();
-                }
-                
+                if(currentFilterCategory !== '全部' && !catExists) currentFilterCategory = '全部';
+                updateCategoryInterface();
                 renderBookshelf();
             }
         }
@@ -586,14 +600,13 @@
             }
         }
 
-        // --- 進入單一書籍內頁 ---
         function enterBook(id) {
             currentBookId = id;
             const book = books.find(b => b.id === id);
             if(!book) return;
 
             document.getElementById('currentBookName').innerText = book.title;
-            document.getElementById('currentBookAuthor').innerText = `作者：${book.author}  |  分類：${book.category || '未分類'}`;
+            document.getElementById('currentBookAuthor').innerText = `作者：${book.author}  |  # ${book.category || '未分類'}`;
             insideStatusSelect.value = book.status;
 
             switchView('inside');
@@ -604,10 +617,7 @@
 
         insideStatusSelect.addEventListener('change', function() {
             const book = books.find(b => b.id === currentBookId);
-            if(book) {
-                book.status = this.value;
-                saveData();
-            }
+            if(book) { book.status = this.value; saveData(); }
         });
 
         document.getElementById('btnBackToShelf').addEventListener('click', () => {
@@ -616,7 +626,6 @@
             renderBookshelf();
         });
 
-        // --- 第二層：單書筆記管理事件 ---
         document.getElementById('moodSelector').addEventListener('click', function(e) {
             if(e.target.classList.contains('mood-btn') && !e.target.classList.contains('btn-add-custom')) {
                 Array.from(this.children).forEach(b => b.classList.remove('selected'));
@@ -627,7 +636,7 @@
 
         document.getElementById('btnCustomMood').addEventListener('click', function(e) {
             e.stopPropagation();
-            const custom = prompt('請輸入你想記錄的當下心情（例如：🧘 沉靜、🪐 孤獨）：');
+            const custom = prompt('請輸入你想記錄的當下心情（例如：🧘 沉靜）：');
             if(custom && custom.trim() !== '') {
                 const cleanedMood = custom.trim();
                 const newMoodBtn = document.createElement('button');
@@ -660,15 +669,7 @@
             const now = new Date();
             const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
 
-            const newNote = {
-                id: Date.now(),
-                quote,
-                thought,
-                mood: selectedMood,
-                color: selectedColor,
-                date: dateStr
-            };
-
+            const newNote = { id: Date.now(), quote, thought, mood: selectedMood, color: selectedColor, date: dateStr };
             book.notes.unshift(newNote); 
             saveData();
             renderNotes();
@@ -679,19 +680,14 @@
             notesTimeline.innerHTML = '';
             const book = books.find(b => b.id === currentBookId);
             if(!book || book.notes.length === 0) {
-                notesTimeline.innerHTML = `<div class="empty-hint">書頁扉白，在此留下第一個觸動你的片刻。</div>`;
+                notesTimeline.innerHTML = `<div class="empty-hint">書頁扉白，留下第一個觸動你的片刻。</div>`;
                 return;
             }
 
             book.notes.forEach(note => {
                 const item = document.createElement('div');
                 item.className = 'timeline-item';
-
-                const thoughtHTML = note.thought ? `
-                    <div class="card-thought-box" id="thought-display-${note.id}">
-                        ${escapeHtml(note.thought)}
-                    </div>
-                ` : `<div class="card-thought-box" id="thought-display-${note.id}" style="display:none;"></div>`;
+                const thoughtHTML = note.thought ? `<div class="card-thought-box" id="thought-display-${note.id}">${escapeHtml(note.thought)}</div>` : '';
 
                 item.innerHTML = `
                     <div class="timeline-dot"></div>
@@ -700,15 +696,11 @@
                             <button class="btn-card-action" id="btn-edit-${note.id}" onclick="toggleEditNote(${note.id})">編輯</button>
                             <button class="btn-card-action delete" onclick="deleteNote(${note.id})">撕下</button>
                         </div>
-                        <div class="card-top">
-                            <span class="card-mood">${note.mood}</span>
-                        </div>
-                        
+                        <div class="card-top"><span class="card-mood">${note.mood}</span></div>
                         <div id="note-body-${note.id}">
                             <div class="card-quote" id="quote-display-${note.id}">${escapeHtml(note.quote)}</div>
                             ${thoughtHTML}
                         </div>
-                        
                         <div class="card-date">${note.date}</div>
                     </div>
                 `;
@@ -729,92 +721,53 @@
                 editBtn.innerText = '儲存';
                 bodyZone.innerHTML = `
                     <textarea id="edit-quote-${noteId}" class="edit-textarea" style="font-family:'Lora', serif; font-size:1.1rem; min-height:70px;" required>${note.quote}</textarea>
-                    <textarea id="edit-thought-${noteId}" class="edit-textarea" style="min-height:70px;" placeholder="寫下當下的體悟...">${note.thought || ''}</textarea>
+                    <textarea id="edit-thought-${noteId}" class="edit-textarea" style="min-height:70px;" placeholder="寫下想法...">${note.thought || ''}</textarea>
                 `;
             } else {
                 const newQuote = document.getElementById(`edit-quote-${noteId}`).value.trim();
                 const newThought = document.getElementById(`edit-thought-${noteId}`).value.trim();
-
-                if(!newQuote) {
-                    alert('佳句欄位不能為空喔！');
-                    return;
-                }
-
-                note.quote = newQuote;
-                note.thought = newThought;
-                
-                saveData();
-                renderNotes(); 
+                if(!newQuote) return alert('佳句不能為空！');
+                note.quote = newQuote; note.thought = newThought;
+                saveData(); renderNotes(); 
             }
         }
 
         function deleteNote(noteId) {
             if(confirm('確定要撕下這張書箋嗎？')) {
                 const book = books.find(b => b.id === currentBookId);
-                if(book) {
-                    book.notes = book.notes.filter(n => n.id !== noteId);
-                    saveData();
-                    renderNotes();
-                }
+                if(book) { book.notes = book.notes.filter(n => n.id !== noteId); saveData(); renderNotes(); }
             }
         }
 
         function resetNoteForm() {
             document.getElementById('noteForm').reset();
-            selectedMood = '💡 啟發';
-            selectedColor = '#ffffff';
-            
+            selectedMood = '💡 啟發'; selectedColor = '#ffffff';
             const selector = document.getElementById('moodSelector');
-            const btns = Array.from(selector.querySelectorAll('.mood-btn'));
-            btns.forEach(b => {
-                if(!b.classList.contains('btn-add-custom') && !['💡 啟發', '🌱 療癒', '☕ 平靜', '🌊 共鳴'].includes(b.getAttribute('data-mood'))) {
-                    b.remove();
-                }
+            Array.from(selector.querySelectorAll('.mood-btn')).forEach(b => {
+                if(!b.classList.contains('btn-add-custom') && !['💡 啟發', '🌱 療癒', '☕ 平靜', '🌊 共鳴'].includes(b.getAttribute('data-mood'))) b.remove();
             });
-
-            Array.from(selector.children).forEach((b,i) => {
-                b.classList.toggle('selected', i === 0);
-            });
-            Array.from(document.getElementById('colorSelector').children).forEach((d,i) => {
-                d.classList.toggle('selected', i === 0);
-            });
+            Array.from(selector.children).forEach((b,i) => b.classList.toggle('selected', i === 0));
+            Array.from(document.getElementById('colorSelector').children).forEach((d,i) => d.classList.toggle('selected', i === 0));
         }
 
-        // --- 跨書關鍵字搜尋 ---
         document.getElementById('searchInput').addEventListener('input', function() {
             const keyword = this.value.trim().toLowerCase();
-            if(viewBookshelf.classList.contains('active')) {
-                renderBookshelf(keyword);
-            } else {
-                switchView('bookshelf');
-                renderBookshelf(keyword);
-            }
+            if(!viewBookshelf.classList.contains('active')) switchView('bookshelf');
+            renderBookshelf(keyword);
         });
 
-        // --- 一期一會．隨機漫步 ---
         const randomModal = document.getElementById('randomModal');
         document.getElementById('btnRandom').addEventListener('click', () => {
             let allNotes = [];
-            books.forEach(b => {
-                b.notes.forEach(n => {
-                    allNotes.push({ bookTitle: b.title, ...n });
-                });
-            });
-
-            if(allNotes.length === 0) {
-                alert('書櫃中還沒有任何筆記喔！先去寫幾則吧。');
-                return;
-            }
+            books.forEach(b => b.notes.forEach(n => allNotes.push({ bookTitle: b.title, ...n })));
+            if(allNotes.length === 0) return alert('書櫃中還沒有任何筆記喔！');
 
             const luckyNote = allNotes[Math.floor(Math.random() * allNotes.length)];
-            const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = `
+            document.getElementById('modalContent').innerHTML = `
                 <span class="modal-close" id="btnModalClose" onclick="closeModal()">&times;</span>
-                <div style="text-align:center; margin-bottom:1.5rem; font-size:0.85rem; color:var(--text-muted); letter-spacing:0.1rem;">— 一期一會 ． 頃刻重逢 —</div>
+                <div style="text-align:center; margin-bottom:1.2rem; font-size:0.8rem; color:var(--text-muted);">— 一期一會 ． 頃刻重逢 —</div>
                 <div class="polaroid-card" style="background: ${luckyNote.color}; box-shadow:none; border:1px solid var(--border-color);">
-                    <div class="card-top">
-                        <span class="card-mood">${luckyNote.mood}</span>
-                    </div>
+                    <div class="card-top"><span class="card-mood">${luckyNote.mood}</span></div>
                     <div class="card-quote">${escapeHtml(luckyNote.quote)}</div>
                     ${luckyNote.thought ? `<div class="card-thought-box">${escapeHtml(luckyNote.thought)}</div>` : ''}
                     <div class="card-top" style="margin-top:1rem; margin-bottom:0;">
@@ -829,98 +782,49 @@
         function closeModal() { randomModal.classList.remove('active'); }
         window.addEventListener('click', (e) => { if(e.target === randomModal) closeModal(); });
 
-
-        // --- 進階功能：資料備份與匯入處理 ---
-        
-        // 1. 匯出備份 (將資料包裝成 JSON 檔案下載)
         function exportLibraryBackup() {
-            if(books.length === 0) {
-                alert('目前書櫃還是空的，不需要備份喔。');
-                return;
-            }
-            
+            if(books.length === 0) return alert('目前書櫃還是空的。');
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(books, null, 2));
             const downloadAnchor = document.createElement('a');
-            
-            // 取得今日日期作為檔名
-            const today = new Date();
-            const dateFileName = `reading-notes-backup-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.json`;
-            
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", dateFileName);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            downloadAnchor.setAttribute("download", `reading-notes-backup-${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
         }
 
-        // 2. 觸發隱藏的 File 上傳元件
-        function triggerImportClick() {
-            document.getElementById('importFileInput').click();
-        }
-
-        // 3. 處理匯入備份
+        function triggerImportClick() { document.getElementById('importFileInput').click(); }
         function importLibraryBackup(inputElement) {
-            const file = inputElement.files[0];
-            if (!file) return;
-
-            if (confirm('匯入備份將會【覆蓋】您目前電腦中的書櫃內容，且無法還原！確定要執行嗎？')) {
+            const file = inputElement.files[0]; if (!file) return;
+            if (confirm('匯入將會覆蓋目前的書櫃內容且無法還原！確定嗎？')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
                         const importedData = JSON.parse(e.target.result);
-                        
-                        // 基礎防呆：檢查是不是我們系統的陣列格式
                         if (Array.isArray(importedData)) {
-                            books = importedData;
-                            saveData();
-                            
-                            // 重新刷新整個介面
-                            currentFilterCategory = '全部';
-                            updateCategoryInterface();
-                            renderBookshelf();
-                            
-                            alert('🔮 舊書房備份已完美搬移過來！');
-                        } else {
-                            alert('備份檔案格式不正確，無法順利讀取。');
-                        }
-                    } catch (err) {
-                        alert('讀取檔案時發生錯誤，請確保該檔案是完整的備份 json 檔。');
-                    }
-                    // 清空 input 讓同一個檔案可以重複選取觸發
+                            books = importedData; saveData(); currentFilterCategory = '全部';
+                            updateCategoryInterface(); renderBookshelf(); alert('🔮 書房已完美還原！');
+                        } else { alert('檔案格式錯誤。'); }
+                    } catch (err) { alert('讀取失敗。'); }
                     inputElement.value = '';
                 };
                 reader.readAsText(file);
-            } else {
-                inputElement.value = '';
-            }
+            } else { inputElement.value = ''; }
         }
 
-
-        // --- 工具型函式：畫面切換控制 ---
         function switchView(viewName) {
             if(viewName === 'bookshelf') {
-                viewBookshelf.classList.add('active');
-                viewBookInside.classList.remove('active');
+                viewBookshelf.classList.add('active'); viewBookInside.classList.remove('active');
                 document.getElementById('navSub').innerText = "一本書，幾則筆記，一個安靜的午後。";
             } else {
-                viewBookshelf.classList.remove('active'); 
-                viewBookInside.classList.add('active');
+                viewBookshelf.classList.remove('active'); viewBookInside.classList.add('active');
                 document.getElementById('navSub').innerText = "在別人的故事裡，看見自己的微光。";
             }
+            updateCategoryInterface();
         }
 
-        function saveData() {
-            localStorage.setItem('digitalLibraryBooks', JSON.stringify(books));
-        }
-
+        function saveData() { localStorage.setItem('digitalLibraryBooks', JSON.stringify(books)); }
         function escapeHtml(text) {
             if(!text) return '';
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
 </body>
