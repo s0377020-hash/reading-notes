@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時光書箋．閱讀筆記</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 核心文青風與色票設定 --- */
+        :root {
+            --bg-main: #fcfbfa;       /* 舒適淺米色 */
+            --text-main: #3a3532;     /* 深炭褐 */
+            --text-muted: #8a827e;    /* 迷霧灰 */
+            --border-color: #e8e5e0;  /* 淡淡線條 */
+            --accent-color: #7d6b58;  /* 經典書卷褐 */
+            --card-default: #ffffff;  /* 純白 */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 300;
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* 頂部導航 */
+        header {
+            max-width: 1200px;
+            margin: 0 auto 2.5rem auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        .header-title h1 {
+            font-family: 'Lora', 'Noto Sans TC', serif;
+            font-weight: 400;
+            font-size: 1.8rem;
+            letter-spacing: 0.15rem;
+            color: var(--accent-color);
+        }
+        .header-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem; }
+        
+        /* 搜尋與隨機工具列 */
+        .toolbar { display: flex; gap: 0.8rem; align-items: center; }
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            width: 200px;
+            transition: all 0.3s;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent-color); width: 240px; }
+        
+        /* 通用優雅按鈕 */
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border: 1px solid var(--accent-color);
+            background: transparent;
+            color: var(--accent-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            letter-spacing: 0.05rem;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { background: var(--accent-color); color: #fff; }
+        .btn-primary { background: var(--accent-color); color: #fff; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* 分類篩選列 */
+        .category-filter-bar {
+            max-width: 1200px;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: none; border: 1px solid var(--border-color); color: var(--text-muted);
+            padding: 0.3rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-family: inherit;
+            transition: all 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            border-color: var(--accent-color); color: var(--text-main); background: rgba(125, 107, 88, 0.05);
+        }
+
+        main { max-width: 1200px; margin: 0 auto; }
+
+        /* --- 視窗顯示切換 --- */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* --- 第一層：我的書櫃頁面 --- */
+        .bookshelf-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+        .bookshelf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 2rem;
+        }
+        /* 書籍封面卡片 */
+        .book-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 200px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .book-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .book-card h3 { font-size: 1.1rem; font-weight: 500; color: var(--text-main); margin-bottom: 0.3rem; }
+        .book-card .author { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        
+        .book-card-category-zone {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .book-card .category-tag { font-size: 0.75rem; color: var(--text-muted); font-style: italic; }
+        .btn-edit-category {
+            background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.75rem; transition: color 0.3s;
+        }
+        .book-card:hover .btn-edit-category { color: var(--text-muted); }
+        .btn-edit-category:hover { color: var(--accent-color) !important; text-decoration: underline; }
+        
+        .book-card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .book-card .badge-status {
+            font-size: 0.75rem; padding: 0.1rem 0.6rem; border-radius: 12px;
+            background: var(--bg-main); color: var(--accent-color); border: 1px solid var(--border-color);
+        }
+        .book-card .note-count { font-size: 0.75rem; color: var(--text-muted); }
+        
+        .btn-card-delete {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.75rem; opacity: 0; transition: opacity 0.3s;
+        }
+        .book-card:hover .btn-card-delete { opacity: 1; }
+        .btn-card-delete:hover { color: #b76e67; }
+
+        /* 備份按鈕區塊 */
+        .backup-zone {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            text-align: center;
+        }
+        .backup-title { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.05rem; }
+        .btn-backup-text {
+            background: none; border: none; color: var(--accent-color); font-size: 0.8rem;
+            cursor: pointer; font-family: inherit; text-decoration: underline; transition: color 0.2s;
+        }
+        .btn-backup-text:hover { color: var(--text-main); }
+
+        /* --- 第二層：書籍內頁（單書筆記） --- */
+        .inside-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px dashed var(--border-color); padding-bottom: 1.5rem; }
+        .inside-header-left { display: flex; align-items: center; gap: 1.5rem; }
+        .inside-title h2 { font-family: 'Lora', serif; font-size: 1.6rem; color: var(--accent-color); }
+        
+        .status-editor { display: flex; align-items: center; gap: 0.5rem; background: #fff; padding: 0.4rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); }
+        .status-editor label { font-size: 0.8rem; color: var(--text-muted); }
+        .status-select-mini { border: none; background: transparent; color: var(--text-main); font-family: inherit; font-size: 0.85rem; cursor: pointer; outline: none; }
+
+        .inside-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        /* 表單元素通用 */
+        .form-box { background: #fff; padding: 1.8rem; border-radius: 4px; border: 1px solid var(--border-color); }
+        .form-box h3 { font-size: 1rem; margin-bottom: 1.2rem; color: var(--accent-color); }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.4rem; color: var(--accent-color); }
+        .form-control {
+            width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); background: var(--bg-main);
+            border-radius: 4px; font-family: inherit; font-size: 0.85rem; color: var(--text-main); transition: all 0.3s;
+        }
+        .form-control:focus { outline: none; border-color: var(--accent-color); background: #fff; }
+        
+        /* 心情選擇鈕與自訂區 */
+        .mood-selector { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .mood-btn {
+            border: 1px solid var(--border-color); background: var(--bg-main); padding: 0.3rem 0.6rem;
+            border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: inherit; transition: all 0.2s;
+        }
+        .mood-btn.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+        .mood-btn.btn-add-custom { border-style: dashed; color: var(--text-muted); }
+
+        /* 文青微糖色票選擇 */
+        .color-selector { display: flex; gap: 0.6rem; margin-top: 0.3rem; }
+        .color-dot {
+            width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+            border: 2px solid transparent; transition: transform 0.2s;
+        }
+        .color-dot.selected { border-color: var(--accent-color); transform: scale(1.1); }
+
+        /* 筆記卡片展示區（時間軸概念） */
+        .notes-timeline {
+            position: relative;
+            padding-left: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+        .notes-timeline::before {
+            content: ''; position: absolute; left: 0; top: 10px; bottom: 10px;
+            width: 1px; background-color: var(--border-color);
+        }
+
+        /* 拍立得筆記卡片 */
+        .timeline-item { position: relative; }
+        .timeline-dot {
+            position: absolute; left: -1.85rem; top: 20px;
+            width: 9px; height: 9px; border-radius: 50%; background: var(--border-color);
+            border: 2px solid var(--bg-main);
+        }
+        
+        .polaroid-card {
+            padding: 1.2rem 1.2rem 2.2rem 1.2rem;
+            border-radius: 2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            position: relative;
+            transition: transform 0.3s;
+        }
+        
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+        .card-mood { font-size: 0.8rem; color: var(--text-muted); background: rgba(255,255,255,0.4); padding: 0.1rem 0.4rem; border-radius: 4px; }
+        
+        /* 卡片功能按鈕組 */
+        .card-actions { display: flex; gap: 0.5rem; position: absolute; top: 0.5rem; right: 0.5rem; }
+        .btn-card-action {
+            background: none; border: none; color: #bbb; cursor: pointer; font-size: 0.75rem; transition: color 0.3s;
+        }
+        .btn-card-action:hover { color: var(--accent-color); }
+        .btn-card-action.delete:hover { color: #b76e67; }
+
+        .card-quote { font-family: 'Lora', serif; font-size: 1.25rem; font-weight: 400; margin-bottom: 1.2rem; line-height: 1.5; }
+        
+        /* 毛玻璃想法區 */
+        .card-thought-box {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.5);
+            padding: 0.9rem; border-radius: 4px; font-size: 0.85rem; text-align: justify; margin-bottom: 1rem;
+        }
+        .card-date { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
+
+        /* 內嵌編輯模式樣式 */
+        .edit-textarea {
+            width: 100%; border: 1px solid var(--border-color); background: rgba(255,255,255,0.8);
+            padding: 0.5rem; border-radius: 4px; font-family: inherit; font-size: 0.9rem; color: var(--text-main);
+            margin-bottom: 0.8rem; resize: vertical;
+        }
+
+        /* 一期一會燈箱彈窗 */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(58, 53, 50, 0.4); backdrop-filter: blur(4px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--bg-main); padding: 2rem; border-radius: 6px; max-width: 500px; width: 90%; position: relative; }
+        .modal-close { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+
+        .empty-hint { text-align: center; color: var(--text-muted); padding: 4rem 0; font-size: 0.9rem; letter-spacing: 0.05rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title">
+            <h1 id="navBrand" style="cursor:pointer;">閱讀筆記</h1>
+            <p id="navSub">一本書，幾則筆記，一個安靜的午後。</p>
+        </div>
+        <div class="toolbar" id="globalToolbar">
+            <input type="text" id="searchInput" class="search-input" placeholder="跨書搜尋佳句、想法...">
+            <button class="btn" id="btnRandom">隨機漫步</button>
+        </div>
+    </header>
+
+    <div class="category-filter-bar" id="categoryFilterBar">
+        </div>
+
+    main
+    <main>
+        <section id="viewBookshelf" class="view-section view-section-bookshelf active">
+            <div class="bookshelf-layout">
+                <div>
+                    <div class="form-box">
+                        <h3>收入書櫃</h3>
+                        <form id="bookForm">
+                            <div class="form-group">
+                                <label for="newBookTitle">書名</label>
+                                <input type="text" id="newBookTitle" class="form-control" placeholder="如：過度努力" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newBookAuthor">作者</label>
+                                <input type="text" id="newBookAuthor" class="form-control" placeholder="如：周慕姿">
+                            </div>
+                            <div class="form-group">
+                                <label for="newBookCategory">書籍分類</label>
+                                <input type="text" id="newBookCategory" class="form-control" placeholder="如：心理學、文學" list="existCategories">
+                                <datalist id="existCategories">
+                                    </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label for="newBookStatus">閱讀狀態</label>
+                                <select id="newBookStatus" class="form-control">
+                                    <option value="讀書中">🌱 讀書中</option>
+                                    <option value="已完讀">☕ 已完讀</option>
+                                    <option value="待閱讀">💤 待閱讀</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%; padding:0.7rem;">放入書櫃</button>
+                        </form>
+                    </div>
+
+                    <div class="backup-zone">
+                        <div class="backup-title">📁 書房數據維護</div>
+                        <button class="btn-backup-text" onclick="exportLibraryBackup()">導出書房完整備份</button>
+                        <button class="btn-backup-text" onclick="triggerImportClick()">匯入舊書房備份</button>
+                        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importLibraryBackup(this)">
+                    </div>
+                </div>
+
+                <div class="bookshelf-grid" id="bookshelfGrid">
+                    </div>
+            </div>
+        </section>
+
+        <section id="viewBookInside" class="view-section view-section-inside">
+            <div class="inside-header">
+                <div class="inside-header-left">
+                    <button class="btn" id="btnBackToShelf">← 返回書櫃</button>
+                    <div class="inside-title">
+                        <h2 id="currentBookName">書名讀取中</h2>
+                        <p id="currentBookAuthor" style="font-size:0.85rem; color:var(--text-muted);"></p>
+                    </div>
+                </div>
+                <div class="status-editor">
+                    <label>閱讀狀態：</label>
+                    <select id="insideStatusSelect" class="status-select-mini">
+                        <option value="讀書中">🌱 讀書中</option>
+                        <option value="已完讀">☕ 已完讀</option>
+                        <option value="待閱讀">💤 待閱讀</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="inside-layout">
+                <div class="form-box">
+                    <h3>銘刻書箋</h3>
+                    <form id="noteForm">
+                        <div class="form-group">
+                            <label for="noteQuote">書中佳句</label>
+                            <textarea id="noteQuote" class="form-control" style="min-height:90px;" placeholder="觸動心弦的句子..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="noteThought">我的感受與想法</label>
+                            <textarea id="noteThought" class="form-control" style="min-height:90px;" placeholder="寫下當下的體悟..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>當下心情</label>
+                            <div class="mood-selector" id="moodSelector">
+                                <button type="button" class="mood-btn selected" data-mood="💡 啟發">💡 啟發</button>
+                                <button type="button" class="mood-btn" data-mood="🌱 療癒">🌱 療癒</button>
+                                <button type="button" class="mood-btn" data-mood="☕ 平靜">☕ 平靜</button>
+                                <button type="button" class="mood-btn" data-mood="🌊 共鳴">🌊 共鳴</button>
+                                <button type="button" class="mood-btn btn-add-custom" id="btnCustomMood">＋ 自訂</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>箋紙底色</label>
+                            <div class="color-selector" id="colorSelector">
+                                <div class="color-dot selected" data-color="#ffffff" style="background:#ffffff; border:1px solid #e8e5e0;"></div>
+                                <div class="color-dot" data-color="#F4EBE1" style="background:#F4EBE1;"></div>
+                                <div class="color-dot" data-color="#E3EDF0" style="background:#E3EDF0;"></div>
+                                <div class="color-dot" data-color="#EAE3EC" style="background:#EAE3EC;"></div>
+                                <div class="color-dot" data-color="#E8EFE9" style="background:#E8EFE9;"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; padding:0.7rem;">夾入書頁</button>
+                    </form>
+                </div>
+
+                <div class="notes-timeline" id="notesTimeline">
+                    </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="randomModal">
+        <div class="modal-content" id="modalContent">
+            <span class="modal-close" id="btnModalClose">&times;</span>
+            </div>
+    </div>
+
+    <script>
+        // --- 資料結構 ---
+        let books = JSON.parse(localStorage.getItem('digitalLibraryBooks')) || [];
+        let currentBookId = null;
+        let currentFilterCategory = '全部';
+
+        let selectedColor = '#ffffff';
+        let selectedMood = '💡 啟發';
+
+        // --- DOM 節點元素 ---
+        const viewBookshelf = document.getElementById('viewBookshelf');
+        const viewBookInside = document.getElementById('viewBookInside');
+        const bookshelfGrid = document.getElementById('bookshelfGrid');
+        const notesTimeline = document.getElementById('notesTimeline');
+        const navBrand = document.getElementById('navBrand');
+        const categoryFilterBar = document.getElementById('categoryFilterBar');
+        const existCategories = document.getElementById('existCategories');
+        const insideStatusSelect = document.getElementById('insideStatusSelect');
+
+        // --- 初始化啟動 ---
+        updateCategoryInterface();
+        renderBookshelf();
+
+        // --- 點擊標題回到書櫃 ---
+        navBrand.addEventListener('click', () => {
+            currentFilterCategory = '全部';
+            switchView('bookshelf');
+            updateCategoryInterface();
+            renderBookshelf();
+        });
+
+        // --- 書籍分類動態介面更新 ---
+        function updateCategoryInterface() {
+            let categories = ['全部'];
+            books.forEach(b => {
+                if(b.category && !categories.includes(b.category)) {
+                    categories.push(b.category);
+                }
+            });
+
+            if(viewBookshelf.classList.contains('active')) {
+                categoryFilterBar.style.display = 'flex';
+                categoryFilterBar.innerHTML = categories.map(cat => `
+                    <button class="filter-btn ${currentFilterCategory === cat ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</button>
+                `).join('');
+            } else {
+                categoryFilterBar.style.display = 'none';
+            }
+
+            existCategories.innerHTML = categories.filter(c => c !== '全部').map(cat => `
+                <option value="${cat}">
+            `).join('');
+        }
+
+        function filterCategory(catName) {
+            currentFilterCategory = catName;
+            updateCategoryInterface();
+            renderBookshelf();
+        }
+
+        // --- 第一層：書籍管理事件 ---
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('newBookTitle').value.trim();
+            const author = document.getElementById('newBookAuthor').value.trim() || '佚名';
+            const category = document.getElementById('newBookCategory').value.trim() || '未分類';
+            const status = document.getElementById('newBookStatus').value;
+
+            const newBook = {
+                id: Date.now(),
+                title,
+                author,
+                category,
+                status,
+                notes: []
+            };
+
+            books.push(newBook);
+            saveData();
+            updateCategoryInterface();
+            renderBookshelf();
+            this.reset();
+        });
+
+        function renderBookshelf(filterKeyword = '') {
+            bookshelfGrid.innerHTML = '';
+            let targetBooks = books;
+
+            if(currentFilterCategory !== '全部') {
+                targetBooks = targetBooks.filter(b => b.category === currentFilterCategory);
+            }
+
+            if(filterKeyword) {
+                targetBooks = targetBooks.filter(b => 
+                    b.title.toLowerCase().includes(filterKeyword) || 
+                    b.author.toLowerCase().includes(filterKeyword) ||
+                    b.notes.some(n => n.quote.toLowerCase().includes(filterKeyword) || n.thought.toLowerCase().includes(filterKeyword))
+                );
+            }
+
+            if(targetBooks.length === 0) {
+                bookshelfGrid.innerHTML = `<div class="empty-hint">此分類下尚無書籍，放入一本書，開啟思想的偏安之所。</div>`;
+                return;
+            }
+
+            targetBooks.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.setAttribute('onclick', `enterBook(${book.id})`);
+                card.innerHTML = `
+                    <button class="btn-card-delete" onclick="deleteBook(event, ${book.id})">下架</button>
+                    <div>
+                        <h3>${escapeHtml(book.title)}</h3>
+                        <div class="author">${escapeHtml(book.author)}</div>
+                        <div class="book-card-category-zone">
+                            <div class="category-tag"># ${escapeHtml(book.category || '未分類')}</div>
+                            <button class="btn-edit-category" onclick="editBookCategory(event, ${book.id})">修改分類</button>
+                        </div>
+                    </div>
+                    <div class="book-card-meta">
+                        <span class="badge-status">${book.status}</span>
+                        <div class="note-count">🔖 ${book.notes.length} 則筆記</div>
+                    </div>
+                `;
+                bookshelfGrid.appendChild(card);
+            });
+        }
+
+        function editBookCategory(event, bookId) {
+            event.stopPropagation(); 
+            const book = books.find(b => b.id === bookId);
+            if(!book) return;
+
+            const newCat = prompt(`請輸入《${book.title}》的新分類名稱：`, book.category || '未分類');
+            if(newCat !== null) {
+                const cleanedCat = newCat.trim() || '未分類';
+                book.category = cleanedCat;
+                
+                saveData();
+                updateCategoryInterface();
+                
+                let catExists = books.some(b => b.category === currentFilterCategory);
+                if(currentFilterCategory !== '全部' && !catExists) {
+                    currentFilterCategory = '全部';
+                    updateCategoryInterface();
+                }
+                
+                renderBookshelf();
+            }
+        }
+
+        function deleteBook(event, id) {
+            event.stopPropagation(); 
+            if(confirm('下架此書將會一併抹去裡面所有的筆記，確定嗎？')) {
+                books = books.filter(b => b.id !== id);
+                saveData();
+                updateCategoryInterface();
+                renderBookshelf();
+            }
+        }
+
+        // --- 進入單一書籍內頁 ---
+        function enterBook(id) {
+            currentBookId = id;
+            const book = books.find(b => b.id === id);
+            if(!book) return;
+
+            document.getElementById('currentBookName').innerText = book.title;
+            document.getElementById('currentBookAuthor').innerText = `作者：${book.author}  |  分類：${book.category || '未分類'}`;
+            insideStatusSelect.value = book.status;
+
+            switchView('inside');
+            updateCategoryInterface();
+            resetNoteForm();
+            renderNotes();
+        }
+
+        insideStatusSelect.addEventListener('change', function() {
+            const book = books.find(b => b.id === currentBookId);
+            if(book) {
+                book.status = this.value;
+                saveData();
+            }
+        });
+
+        document.getElementById('btnBackToShelf').addEventListener('click', () => {
+            switchView('bookshelf');
+            updateCategoryInterface();
+            renderBookshelf();
+        });
+
+        // --- 第二層：單書筆記管理事件 ---
+        document.getElementById('moodSelector').addEventListener('click', function(e) {
+            if(e.target.classList.contains('mood-btn') && !e.target.classList.contains('btn-add-custom')) {
+                Array.from(this.children).forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedMood = e.target.getAttribute('data-mood');
+            }
+        });
+
+        document.getElementById('btnCustomMood').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const custom = prompt('請輸入你想記錄的當下心情（例如：🧘 沉靜、🪐 孤獨）：');
+            if(custom && custom.trim() !== '') {
+                const cleanedMood = custom.trim();
+                const newMoodBtn = document.createElement('button');
+                newMoodBtn.type = 'button';
+                newMoodBtn.className = 'mood-btn selected';
+                newMoodBtn.setAttribute('data-mood', cleanedMood);
+                newMoodBtn.innerText = cleanedMood.length > 5 ? cleanedMood.substring(0,4)+'…' : cleanedMood;
+                
+                Array.from(this.parentNode.children).forEach(b => b.classList.remove('selected'));
+                this.parentNode.insertBefore(newMoodBtn, this);
+                selectedMood = cleanedMood;
+            }
+        });
+
+        document.getElementById('colorSelector').addEventListener('click', function(e) {
+            if(e.target.classList.contains('color-dot')) {
+                Array.from(this.children).forEach(d => d.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedColor = e.target.getAttribute('data-color');
+            }
+        });
+
+        document.getElementById('noteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const book = books.find(b => b.id === currentBookId);
+            if(!book) return;
+
+            const quote = document.getElementById('noteQuote').value.trim();
+            const thought = document.getElementById('noteThought').value.trim();
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
+
+            const newNote = {
+                id: Date.now(),
+                quote,
+                thought,
+                mood: selectedMood,
+                color: selectedColor,
+                date: dateStr
+            };
+
+            book.notes.unshift(newNote); 
+            saveData();
+            renderNotes();
+            resetNoteForm();
+        });
+
+        function renderNotes() {
+            notesTimeline.innerHTML = '';
+            const book = books.find(b => b.id === currentBookId);
+            if(!book || book.notes.length === 0) {
+                notesTimeline.innerHTML = `<div class="empty-hint">書頁扉白，在此留下第一個觸動你的片刻。</div>`;
+                return;
+            }
+
+            book.notes.forEach(note => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+
+                const thoughtHTML = note.thought ? `
+                    <div class="card-thought-box" id="thought-display-${note.id}">
+                        ${escapeHtml(note.thought)}
+                    </div>
+                ` : `<div class="card-thought-box" id="thought-display-${note.id}" style="display:none;"></div>`;
+
+                item.innerHTML = `
+                    <div class="timeline-dot"></div>
+                    <div class="polaroid-card" style="background: ${note.color};" id="card-${note.id}">
+                        <div class="card-actions">
+                            <button class="btn-card-action" id="btn-edit-${note.id}" onclick="toggleEditNote(${note.id})">編輯</button>
+                            <button class="btn-card-action delete" onclick="deleteNote(${note.id})">撕下</button>
+                        </div>
+                        <div class="card-top">
+                            <span class="card-mood">${note.mood}</span>
+                        </div>
+                        
+                        <div id="note-body-${note.id}">
+                            <div class="card-quote" id="quote-display-${note.id}">${escapeHtml(note.quote)}</div>
+                            ${thoughtHTML}
+                        </div>
+                        
+                        <div class="card-date">${note.date}</div>
+                    </div>
+                `;
+                notesTimeline.appendChild(item);
+            });
+        }
+
+        function toggleEditNote(noteId) {
+            const book = books.find(b => b.id === currentBookId);
+            if(!book) return;
+            const note = book.notes.find(n => n.id === noteId);
+            if(!note) return;
+
+            const bodyZone = document.getElementById(`note-body-${noteId}`);
+            const editBtn = document.getElementById(`btn-edit-${noteId}`);
+
+            if(editBtn.innerText === '編輯') {
+                editBtn.innerText = '儲存';
+                bodyZone.innerHTML = `
+                    <textarea id="edit-quote-${noteId}" class="edit-textarea" style="font-family:'Lora', serif; font-size:1.1rem; min-height:70px;" required>${note.quote}</textarea>
+                    <textarea id="edit-thought-${noteId}" class="edit-textarea" style="min-height:70px;" placeholder="寫下當下的體悟...">${note.thought || ''}</textarea>
+                `;
+            } else {
+                const newQuote = document.getElementById(`edit-quote-${noteId}`).value.trim();
+                const newThought = document.getElementById(`edit-thought-${noteId}`).value.trim();
+
+                if(!newQuote) {
+                    alert('佳句欄位不能為空喔！');
+                    return;
+                }
+
+                note.quote = newQuote;
+                note.thought = newThought;
+                
+                saveData();
+                renderNotes(); 
+            }
+        }
+
+        function deleteNote(noteId) {
+            if(confirm('確定要撕下這張書箋嗎？')) {
+                const book = books.find(b => b.id === currentBookId);
+                if(book) {
+                    book.notes = book.notes.filter(n => n.id !== noteId);
+                    saveData();
+                    renderNotes();
+                }
+            }
+        }
+
+        function resetNoteForm() {
+            document.getElementById('noteForm').reset();
+            selectedMood = '💡 啟發';
+            selectedColor = '#ffffff';
+            
+            const selector = document.getElementById('moodSelector');
+            const btns = Array.from(selector.querySelectorAll('.mood-btn'));
+            btns.forEach(b => {
+                if(!b.classList.contains('btn-add-custom') && !['💡 啟發', '🌱 療癒', '☕ 平靜', '🌊 共鳴'].includes(b.getAttribute('data-mood'))) {
+                    b.remove();
+                }
+            });
+
+            Array.from(selector.children).forEach((b,i) => {
+                b.classList.toggle('selected', i === 0);
+            });
+            Array.from(document.getElementById('colorSelector').children).forEach((d,i) => {
+                d.classList.toggle('selected', i === 0);
+            });
+        }
+
+        // --- 跨書關鍵字搜尋 ---
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const keyword = this.value.trim().toLowerCase();
+            if(viewBookshelf.classList.contains('active')) {
+                renderBookshelf(keyword);
+            } else {
+                switchView('bookshelf');
+                renderBookshelf(keyword);
+            }
+        });
+
+        // --- 一期一會．隨機漫步 ---
+        const randomModal = document.getElementById('randomModal');
+        document.getElementById('btnRandom').addEventListener('click', () => {
+            let allNotes = [];
+            books.forEach(b => {
+                b.notes.forEach(n => {
+                    allNotes.push({ bookTitle: b.title, ...n });
+                });
+            });
+
+            if(allNotes.length === 0) {
+                alert('書櫃中還沒有任何筆記喔！先去寫幾則吧。');
+                return;
+            }
+
+            const luckyNote = allNotes[Math.floor(Math.random() * allNotes.length)];
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <span class="modal-close" id="btnModalClose" onclick="closeModal()">&times;</span>
+                <div style="text-align:center; margin-bottom:1.5rem; font-size:0.85rem; color:var(--text-muted); letter-spacing:0.1rem;">— 一期一會 ． 頃刻重逢 —</div>
+                <div class="polaroid-card" style="background: ${luckyNote.color}; box-shadow:none; border:1px solid var(--border-color);">
+                    <div class="card-top">
+                        <span class="card-mood">${luckyNote.mood}</span>
+                    </div>
+                    <div class="card-quote">${escapeHtml(luckyNote.quote)}</div>
+                    ${luckyNote.thought ? `<div class="card-thought-box">${escapeHtml(luckyNote.thought)}</div>` : ''}
+                    <div class="card-top" style="margin-top:1rem; margin-bottom:0;">
+                        <span style="font-size:0.8rem; color:var(--accent-color); font-weight:500;">《${escapeHtml(luckyNote.bookTitle)}》</span>
+                        <span class="card-date">${luckyNote.date}</span>
+                    </div>
+                </div>
+            `;
+            randomModal.classList.add('active');
+        });
+
+        function closeModal() { randomModal.classList.remove('active'); }
+        window.addEventListener('click', (e) => { if(e.target === randomModal) closeModal(); });
+
+
+        // --- 進階功能：資料備份與匯入處理 ---
+        
+        // 1. 匯出備份 (將資料包裝成 JSON 檔案下載)
+        function exportLibraryBackup() {
+            if(books.length === 0) {
+                alert('目前書櫃還是空的，不需要備份喔。');
+                return;
+            }
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(books, null, 2));
+            const downloadAnchor = document.createElement('a');
+            
+            // 取得今日日期作為檔名
+            const today = new Date();
+            const dateFileName = `reading-notes-backup-${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.json`;
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", dateFileName);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // 2. 觸發隱藏的 File 上傳元件
+        function triggerImportClick() {
+            document.getElementById('importFileInput').click();
+        }
+
+        // 3. 處理匯入備份
+        function importLibraryBackup(inputElement) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            if (confirm('匯入備份將會【覆蓋】您目前電腦中的書櫃內容，且無法還原！確定要執行嗎？')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        // 基礎防呆：檢查是不是我們系統的陣列格式
+                        if (Array.isArray(importedData)) {
+                            books = importedData;
+                            saveData();
+                            
+                            // 重新刷新整個介面
+                            currentFilterCategory = '全部';
+                            updateCategoryInterface();
+                            renderBookshelf();
+                            
+                            alert('🔮 舊書房備份已完美搬移過來！');
+                        } else {
+                            alert('備份檔案格式不正確，無法順利讀取。');
+                        }
+                    } catch (err) {
+                        alert('讀取檔案時發生錯誤，請確保該檔案是完整的備份 json 檔。');
+                    }
+                    // 清空 input 讓同一個檔案可以重複選取觸發
+                    inputElement.value = '';
+                };
+                reader.readAsText(file);
+            } else {
+                inputElement.value = '';
+            }
+        }
+
+
+        // --- 工具型函式：畫面切換控制 ---
+        function switchView(viewName) {
+            if(viewName === 'bookshelf') {
+                viewBookshelf.classList.add('active');
+                viewBookInside.classList.remove('active');
+                document.getElementById('navSub').innerText = "一本書，幾則筆記，一個安靜的午後。";
+            } else {
+                viewBookshelf.classList.remove('active'); 
+                viewBookInside.classList.add('active');
+                document.getElementById('navSub').innerText = "在別人的故事裡，看見自己的微光。";
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('digitalLibraryBooks', JSON.stringify(books));
+        }
+
+        function escapeHtml(text) {
+            if(!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
